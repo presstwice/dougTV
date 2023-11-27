@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en"
+<link rel="icon" type="image/png" href="/transparent-favicon.png">
+
+
+<head>
+    <title>IVS Web Broadcast SDK</title>
+    <script src ="https://web-broadcast.live-video.net/1.2.0/amazon-ivs-web-broadcast.js"> </script> 
+        <script> 
+        document.addEventListener('DOMContentLoaded', async () => {
+            window.broadcasting = false;
+            // get permission for mic and cam
+            await navigator.mediaDevices.getUserMedia({video: true, audio: true});
+            // create a broadcast client
+            const client = IVSBroadcastClient.create({
+                streamConfig: IVSBroadcastClient.BASIC_LANDSCAPE,
+                ingestEndpoint: 'afbb01539032.global-contribute.live-video.net'
+            });
+
+            //add a preview
+            const xdd = document.getElementById('preview');
+            client.attachPreview(xdd);
+
+            // get mics and cameras 
+            // can create a dropdown here later to let the user choose 
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            window.videoDevices = devices.filter(d=> d.kind === 'videoinput');
+            window.audioDevices = devices.filter(d=> d.kind === 'audioinput');
+
+            // get the stream from the webcam
+            window.cameraStream = await navigator.mediaDevices.getUserMedia({
+                video : {
+                    deviceId: { exact: window.videoDevices[0].deviceId },
+                    width: { ideal: 1920, max: 1920 },
+                    height: { ideal: 1080, max: 1080},
+                },
+            });
+
+            // get a stream from the mic
+            window.microphoneStream = await navigator.mediaDevices.getUserMedia({
+                audio: { deviceID: window.audioDevices[0].deviceId},
+            })
+
+             // add the stream to the client 
+        client.addVideoInputDevice(window.cameraStream, 'camera1', {index: 0});
+        client.addAudioInputDevice(window.microphoneStream, 'mic1');
+
+        // add button listener to toggle broadcast
+        document.getElementById('toggle-btn').addEventListener('click', (evt) => {
+            if (!window.broadcasting) {
+                const streamKey = document.getElementById('streamKey').value;
+                client
+                .startBroadcast(streamKey)
+                .then((result) => {
+                    console.log('Broadcast Started!');
+                    window.broadcasting = true;
+                })
+                .catch((error) => {
+                    console.error('Broadcast failed!', error);
+                    window.broadcasting = false;
+                });
+            }
+            else {
+                client.stopBroadcast();
+                console.log('Broadcast ended!');
+                window.broadcasting = false;
+            }
+        });
+
+        });
+
+        </script>
+</head>
+
+<body>
+    <div>
+        <p>
+            <input type="password" id="streamkey" placeholder="Stream Key" />
+        </p>
+    </div>
+    <div> 
+      <canvas id="preview" style="width: 800px; height: 450px;"></canvas>  
+    </div>
+    <div>
+        <p>
+            <button type="button" id="toggle-btn"> Toggle Broadcast</button>
+        </p>
+    </div>
+</body>
+
+</html>
