@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>IVS Playback</title>
+  <script src="https://player.live-video.net/1.14.0/amazon-ivs-player.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // set stream url
+      const streamUrl = '[Playback URL]';
+      // init and play
+      const ivsPlayer = IVSPlayer.create();
+      ivsPlayer.attachHTMLVideoElement(document.getElementById('video-player'));
+      ivsPlayer.load(streamUrl);
+      ivsPlayer.play();
+    });
+  </script>
+</head>
+
+<body>
+  <video id="video-player" style="height: 450px; width: 800px;" controls autoplay muted></video>
+</body>
+
+</html>
